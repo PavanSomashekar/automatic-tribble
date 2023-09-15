@@ -1,0 +1,89 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+// Define a structure to represent an edge
+struct Edge {
+    int src, dest, weight;
+};
+
+// Define a structure to represent a graph
+struct Graph {
+    int V, E;
+    struct Edge* edge;
+    int* inMST;
+};
+
+// Function to create a new graph
+struct Graph* createGraph(int V, int E) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->V = V;
+    graph->E = E;
+    graph->edge = (struct Edge*)malloc(E * sizeof(struct Edge));
+    graph->inMST = (int*)malloc(V * sizeof(int));
+    return graph;
+}
+
+// Function to find and print the MST using Prim's algorithm
+void primMST(struct Graph* graph) {
+    int parent[graph->V]; // Array to store the parent of each vertex
+    int key[graph->V];    // Key values used to pick the minimum weight edge
+
+    for (int i = 0; i < graph->V; i++) {
+        key[i] = INT_MAX;
+        graph->inMST[i] = 0; // Initialize all vertices as not in MST
+    }
+
+    // Start with the first vertex as the root
+    key[0] = 0;
+    parent[0] = -1;
+
+    for (int count = 0; count < graph->V - 1; count++) {
+        int minKey = INT_MAX, minIndex;
+
+        // Find the vertex with the minimum key value
+        for (int v = 0; v < graph->V; v++) {
+            if (!graph->inMST[v] && key[v] < minKey) {
+                minKey = key[v];
+                minIndex = v;
+            }
+        }
+
+        // Include the selected vertex in the MST
+        graph->inMST[minIndex] = 1;
+
+        // Update key values and parent index of adjacent vertices
+        for (int v = 0; v < graph->V; v++) {
+            if (graph->edge[minIndex * graph->V + v].weight < key[v] && !graph->inMST[v]) {
+                parent[v] = minIndex;
+                key[v] = graph->edge[minIndex * graph->V + v].weight;
+            }
+        }
+    }
+
+    // Print the MST edges
+    printf("Edge \tWeight\n");
+    for (int i = 1; i < graph->V; i++) {
+        printf("%d - %d \t%d\n", parent[i], i, key[i]);
+    }
+}
+
+int main() {
+    int V, E; // Number of vertices and edges
+
+    // Input the number of vertices and edges
+    printf("Enter the number of vertices and edges: ");
+    scanf("%d%d", &V, &E);
+
+    struct Graph* graph = createGraph(V, E);
+
+    // Input the edges (source, destination, and weight)
+    printf("Enter the edges (source destination weight):\n");
+    for (int i = 0; i < E; i++) {
+        scanf("%d%d%d", &graph->edge[i].src, &graph->edge[i].dest, &graph->edge[i].weight);
+    }
+
+    primMST(graph); // Find and print the MST
+
+    return 0;
+}
